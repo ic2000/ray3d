@@ -10,6 +10,8 @@
 #include <rapidjson/document.h>
 #include <rapidjson/istreamwrapper.h>
 
+#include <iostream>
+
 namespace Ray3d {
 
 void Engine::load_win_settings() {
@@ -161,23 +163,31 @@ void Engine::cast_ray(const int index, const sf::Vector2f origin,
   const auto vertical_intersection(
       Raycasting::cast_vertical_ray(origin, angle, *current_level));
 
-  if ((horizontal_intersection.x == -1 || horizontal_intersection.y == -1) &&
-      (vertical_intersection.x == -1 || vertical_intersection.y == -1)) {
+  if ((horizontal_intersection.first.x == -1 ||
+       horizontal_intersection.first.y == -1) &&
+      (vertical_intersection.first.x == -1 ||
+       vertical_intersection.first.y == -1))
     return;
-  }
 
   const auto [intersection, distance]{Raycasting::closest_ray_intersection(
-      origin, horizontal_intersection, vertical_intersection)};
+      origin, horizontal_intersection.first, vertical_intersection.first)};
 
   topdown_view->cast_ray(origin, angle, distance);
 
-  RayDirection ray_direction{&intersection == &horizontal_intersection
+  RayDirection ray_direction{&intersection == &horizontal_intersection.first
                                  ? RayDirection::HORIZONTAL
                                  : RayDirection::VERTICAL};
 
+  const auto &tile_pos{ray_direction == RayDirection::HORIZONTAL
+                           ? horizontal_intersection.second
+                           : vertical_intersection.second};
+
+  const auto &opt_tile{current_level->tilemap.get_tile(tile_pos.x, tile_pos.y)};
+  assert(opt_tile.has_value());
+
   game_view->cast_ray(index, player->get_rotation().get_radians(), angle,
                       distance, PLAYER_FOV, current_level->tile_size,
-                      ray_direction);
+                      ray_direction, opt_tile.value());
 }
 
 void Engine::cast_player_rays() {

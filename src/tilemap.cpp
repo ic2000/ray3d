@@ -15,6 +15,14 @@ const std::optional<Tile> &Tilemap::get_tile(const std::size_t x,
   return tiles[x + y * width];
 }
 
+const std::optional<Tile> &Tilemap::get_tile(const int x, const int y) const {
+  assert(static_cast<std::size_t>(x) < width &&
+         static_cast<std::size_t>(y) < height);
+
+  return tiles[static_cast<std::size_t>(x) +
+               static_cast<std::size_t>(y) * width];
+}
+
 void Tilemap::set_tile(const std::size_t x, const std::size_t y,
                        const Tile &&tile) {
   assert(x < width && y < height);

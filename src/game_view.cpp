@@ -1,5 +1,6 @@
 #include "game_view.hpp"
 #include "constants.hpp"
+#include "tile.hpp"
 #include "util.hpp"
 #include <SFML/Graphics/Color.hpp>
 #include <SFML/Graphics/RectangleShape.hpp>
@@ -79,31 +80,31 @@ void GameView::clear_rays() { render_tex.clear(sf::Color::Transparent); }
 
 void GameView::cast_ray(const int index, const float origin_angle,
                         const float ray_angle, float distance, const int fov,
-                        const int tile_size, RayDirection ray_direction) {
-  if (distance <= 0) {
+                        const int tile_size, RayDirection ray_direction,
+                        const Tile &tile) {
+  if (distance <= 0)
     distance += 0.001f;
-  }
 
   const auto ca{Util::modulo(origin_angle - ray_angle, Constants::TAU)};
   distance *= std::cos(ca);
-  const auto wall_height{0.5f};
 
   const auto tex_width_height_ratio{static_cast<float>(render_tex.getSize().x) /
                                     static_cast<float>(render_tex.getSize().y)};
 
-  const auto line_height{
-      std::min((tile_size / distance) * render_tex.getSize().y * wall_height *
-                   tex_width_height_ratio,
-               static_cast<float>(render_tex.getSize().y))};
+  const auto projected_height{std::min(
+      (tile_size / distance) * render_tex.getSize().y * tex_width_height_ratio,
+      static_cast<float>(render_tex.getSize().y))};
 
   const auto line_width{static_cast<float>(render_tex.getSize().x) / fov};
-  auto line{sf::RectangleShape{sf::Vector2f{line_width, line_height * 2}}};
+
+  auto line{sf::RectangleShape{
+      sf::Vector2f{line_width, projected_height * tile.height}}};
 
   line.setPosition(static_cast<float>(index) * line_width,
                    static_cast<float>(render_tex.getSize().y) / 2 -
-                       line_height);
+                       -projected_height / 2 - line.getSize().y);
 
-  line.setFillColor(sf::Color::Magenta);
+  line.setFillColor(tile.wall_color);
 
   if (ray_direction == RayDirection::VERTICAL)
     line.setFillColor(multiply_colour(line.getFillColor(), 1.5f));

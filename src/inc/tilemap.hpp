@@ -1,11 +1,10 @@
 #pragma once
 
+#include "tile.hpp"
 #include <optional>
 #include <vector>
 
 namespace Ray3d {
-
-class Tile {};
 
 class Tilemap {
   size_t width{};
@@ -21,6 +20,7 @@ public:
   const std::optional<Tile> &get_tile(const std::size_t x,
                                       const std::size_t y) const;
 
+  const std::optional<Tile> &get_tile(const int x, const int y) const;
   void set_tile(const std::size_t x, const std::size_t y, const Tile &&tile);
 };
 

@@ -1,25 +1,25 @@
 #include "raycasting.hpp"
 #include "constants.hpp"
 #include "util.hpp"
+#include <SFML/System/Vector2.hpp>
 #include <cmath>
 
 namespace Ray3d {
 
 namespace Raycasting {
 
-sf::Vector2f find_ray_intersection(const RayDirection direction,
-                                   sf::Vector2f position, const float angle,
-                                   const sf::Vector2f offset,
-                                   const Level &level) {
+std::pair<sf::Vector2f, sf::Vector2i>
+find_ray_intersection(const RayDirection direction, sf::Vector2f position,
+                      const float angle, const sf::Vector2f offset,
+                      const Level &level) {
   const float tile_size{static_cast<float>(level.tile_size)};
 
   for (std::size_t depth_of_field{0};
        depth_of_field <
        std::max(level.tilemap.get_width(), level.tilemap.get_height());
        depth_of_field += 1) {
-    sf::Vector2<std::size_t> tile_position{
-        static_cast<std::size_t>(position.x / tile_size),
-        static_cast<std::size_t>(position.y / tile_size)};
+    sf::Vector2i tile_position{static_cast<int>(position.x / tile_size),
+                               static_cast<int>(position.y / tile_size)};
 
     if (direction == RayDirection::HORIZONTAL)
       tile_position.y -= angle > Constants::PI;
@@ -27,28 +27,31 @@ sf::Vector2f find_ray_intersection(const RayDirection direction,
       tile_position.x -=
           angle < Constants::PI * 1.5f && angle > Constants::PI_2;
 
-    if (tile_position.x < 0 || tile_position.x >= level.tilemap.get_width() ||
-        tile_position.y < 0 || tile_position.y >= level.tilemap.get_height())
-      return {-1, -1};
+    if (tile_position.x < 0 ||
+        tile_position.x >= static_cast<int>(level.tilemap.get_width()) ||
+        tile_position.y < 0 ||
+        tile_position.y >= static_cast<int>(level.tilemap.get_height()))
+      return {{-1, -1}, {-1, -1}};
 
     const auto &tile{level.tilemap.get_tile(tile_position.x, tile_position.y)};
 
-    if (tile.has_value())
-      return position;
+    if (tile.has_value() && tile->height > 0)
+      return {position, tile_position};
 
     position.x += offset.x;
     position.y += offset.y;
   }
 
-  return {-1, -1};
+  return {{-1, -1}, {-1, -1}};
 }
 
-sf::Vector2f cast_horizontal_ray(const sf::Vector2f origin, const float angle,
-                                 const Level &level) {
+std::pair<sf::Vector2f, sf::Vector2i>
+cast_horizontal_ray(const sf::Vector2f origin, const float angle,
+                    const Level &level) {
   const float tile_size{static_cast<float>(level.tile_size)};
 
   if (angle == 0 || angle == Constants::PI)
-    return {-1, -1};
+    return {{-1, -1}, {-1, -1}};
 
   float y{std::floor(origin.y / level.tile_size) * level.tile_size};
   float y_offset{-tile_size};
@@ -66,12 +69,13 @@ sf::Vector2f cast_horizontal_ray(const sf::Vector2f origin, const float angle,
                                {x_offset, y_offset}, level);
 }
 
-sf::Vector2f cast_vertical_ray(const sf::Vector2f origin, const float angle,
-                               const Level &level) {
+std::pair<sf::Vector2f, sf::Vector2i>
+cast_vertical_ray(const sf::Vector2f origin, const float angle,
+                  const Level &level) {
   const float tile_size{static_cast<float>(level.tile_size)};
 
   if (angle == Constants::PI_2 || angle == Constants::PI * 1.5f)
-    return {-1, -1};
+    return {{-1, -1}, {-1, -1}};
 
   float x{std::floor(origin.x / level.tile_size) * level.tile_size};
   float x_offset{-tile_size};

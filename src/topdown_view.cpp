@@ -20,7 +20,9 @@ void TopdownView::draw_tilemap() {
           static_cast<float>(x) * tile_size_f + (tile_border_size / 2),
           static_cast<float>(y) * tile_size_f + (tile_border_size / 2));
 
-      if (this->level->tilemap.get_tile(x, y).has_value()) {
+      assert(this->level->tilemap.get_tile(x, y).has_value());
+
+      if (this->level->tilemap.get_tile(x, y)->height > 0) {
         rect.setFillColor(sf::Color::Black);
       } else {
         rect.setFillColor(sf::Color::White);

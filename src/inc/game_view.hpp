@@ -33,7 +33,8 @@ public:
 
   void cast_ray(const int index, const float origin_angle,
                 const float ray_angle, float distance, const int fov,
-                const int tile_size, RayDirection ray_direction);
+                const int tile_size, RayDirection ray_direction,
+                const Tile &tile);
 
   void draw(sf::RenderTarget *target) override;
   const sf::View &get_view() const override;
