@@ -13,6 +13,7 @@ public:
   void set_degrees(const float degrees);
   Angle &operator+=(const float radians);
   Angle &operator-=(const float radians);
+  bool operator==(const Angle &other);
   float get_radians() const;
   float get_degrees() const;
 };

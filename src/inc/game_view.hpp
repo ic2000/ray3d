@@ -31,10 +31,10 @@ public:
 
   void clear_rays();
 
-  void cast_ray(const int index, const float origin_angle,
+  float cast_ray(const int index, const float origin_angle,
                 const float ray_angle, float distance, const int fov,
                 const int tile_size, RayDirection ray_direction,
-                const Tile &tile);
+                const Tile &tile, float current_height = -1);
 
   void draw(sf::RenderTarget *target) override;
   const sf::View &get_view() const override;

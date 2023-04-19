@@ -36,7 +36,9 @@ find_ray_intersection(const RayDirection direction, sf::Vector2f position,
     const auto &tile{level.tilemap.get_tile(tile_position.x, tile_position.y)};
 
     if (tile.has_value() && tile->height > 0)
-      return {position, tile_position};
+      return {{position.x + offset.x / 1000, position.y + offset.y / 1000},
+              tile_position}; // should this return the offset instead of
+                              // applying it?
 
     position.x += offset.x;
     position.y += offset.y;

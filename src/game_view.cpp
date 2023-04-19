@@ -2,6 +2,7 @@
 #include "constants.hpp"
 #include "tile.hpp"
 #include "util.hpp"
+#include <SFML/Graphics/CircleShape.hpp>
 #include <SFML/Graphics/Color.hpp>
 #include <SFML/Graphics/RectangleShape.hpp>
 #include <SFML/Graphics/RenderTarget.hpp>
@@ -78,10 +79,10 @@ void GameView::update_size(const sf::Vector2f &size) {
 
 void GameView::clear_rays() { render_tex.clear(sf::Color::Transparent); }
 
-void GameView::cast_ray(const int index, const float origin_angle,
-                        const float ray_angle, float distance, const int fov,
-                        const int tile_size, RayDirection ray_direction,
-                        const Tile &tile) {
+float GameView::cast_ray(const int index, const float origin_angle,
+                         const float ray_angle, float distance, const int fov,
+                         const int tile_size, RayDirection ray_direction,
+                         const Tile &tile, float current_height) {
   if (distance <= 0)
     distance += 0.001f;
 
@@ -104,7 +105,46 @@ void GameView::cast_ray(const int index, const float origin_angle,
                    static_cast<float>(render_tex.getSize().y) / 2 -
                        -projected_height / 2 - line.getSize().y);
 
+  // if (tile.wall_color == sf::Color::White) {
+  //   current_height = 0;
+  // }
+
+  auto line2 = line;
+
+  if (current_height == -1) {
+    current_height = line2.getPosition().y;
+  } else {
+    if (line2.getPosition().y >= current_height)
+      return current_height;
+
+    auto line_remainder{current_height -
+                        (line2.getPosition().y + line2.getSize().y)};
+
+    auto line2_height{line2.getSize().y};
+
+    if (line_remainder < 0) {
+      std::cout << line_remainder << std::endl;
+      line2_height += line_remainder;
+    }
+
+    if (line2_height <= 0)
+      return current_height;
+
+    line2.setSize({line2.getSize().x, line2_height});
+    line2.setPosition(line.getPosition().x, line.getPosition().y);
+  }
+
+  auto circle = sf::CircleShape{5};
+  circle.setPosition(line2.getPosition().x, line2.getPosition().y);
+  auto circle2 = sf::CircleShape{5};
+
+  circle2.setPosition(line2.getPosition().x + line2.getSize().x,
+                      line2.getPosition().y + line2.getSize().y);
+
   line.setFillColor(tile.wall_color);
+
+  // line.setFillColor(
+  //     sf::Color(tile.wall_color.r, tile.wall_color.g, tile.wall_color.b, 200));
 
   if (ray_direction == RayDirection::VERTICAL)
     line.setFillColor(multiply_colour(line.getFillColor(), 1.5f));
@@ -112,7 +152,15 @@ void GameView::cast_ray(const int index, const float origin_angle,
   line.setFillColor(multiply_colour(line.getFillColor(),
                                     std::min(FOG_DISTANCE / distance, 1.f)));
 
-  render_tex.draw(line);
+  line2.setFillColor(line.getFillColor());
+
+  // render_tex.draw(line);
+  render_tex.draw(line2);
+  // render_tex.draw(circle);
+  // circle2.setFillColor(sf::Color::Red);
+  // render_tex.draw(circle2);
+
+  return line2.getPosition().y;
 }
 
 void GameView::draw(sf::RenderTarget *target) {

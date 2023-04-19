@@ -3,6 +3,8 @@
 #include "util.hpp"
 #include <SFML/Graphics/Color.hpp>
 #include <SFML/Graphics/RenderTarget.hpp>
+#include <SFML/System/Time.hpp>
+#include <SFML/System/Vector2.hpp>
 #include <SFML/Window/Event.hpp>
 #include <cassert>
 #include <filesystem>
@@ -156,7 +158,7 @@ bool Engine::handle_player_rotation(const float elapsed_time) {
 }
 
 void Engine::cast_ray(const int index, const sf::Vector2f origin,
-                      const float angle) {
+                      const float angle, float line_height) {
   const auto horizontal_intersection(
       Raycasting::cast_horizontal_ray(origin, angle, *current_level));
 
@@ -170,9 +172,9 @@ void Engine::cast_ray(const int index, const sf::Vector2f origin,
     return;
 
   const auto [intersection, distance]{Raycasting::closest_ray_intersection(
-      origin, horizontal_intersection.first, vertical_intersection.first)};
+      player->pos, horizontal_intersection.first, vertical_intersection.first)};
 
-  topdown_view->cast_ray(origin, angle, distance);
+  topdown_view->cast_ray(player->pos, angle, distance);
 
   RayDirection ray_direction{&intersection == &horizontal_intersection.first
                                  ? RayDirection::HORIZONTAL
@@ -185,9 +187,13 @@ void Engine::cast_ray(const int index, const sf::Vector2f origin,
   const auto &opt_tile{current_level->tilemap.get_tile(tile_pos.x, tile_pos.y)};
   assert(opt_tile.has_value());
 
-  game_view->cast_ray(index, player->get_rotation().get_radians(), angle,
-                      distance, PLAYER_FOV, current_level->tile_size,
-                      ray_direction, opt_tile.value());
+  line_height = game_view->cast_ray(
+      index, player->get_rotation().get_radians(), angle, distance, PLAYER_FOV,
+      current_level->tile_size, ray_direction, opt_tile.value(), line_height);
+
+  // std::cout << line_height << std::endl;
+
+  cast_ray(index, intersection, angle, line_height);
 }
 
 void Engine::cast_player_rays() {
@@ -200,6 +206,8 @@ void Engine::cast_player_rays() {
   for (int i{0}; i < PLAYER_FOV; i += 1) {
     cast_ray(i, player->pos, angle.get_radians());
     angle += Util::to_radians(1);
+    // std::cout << "END\n";
+    // break;
   }
 }
 

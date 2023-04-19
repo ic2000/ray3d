@@ -8,6 +8,7 @@
 #include "view.hpp"
 #include <SFML/Graphics/Font.hpp>
 #include <SFML/Graphics/RenderWindow.hpp>
+#include <SFML/System/Vector2.hpp>
 #include <SFML/Window/Keyboard.hpp>
 #include <memory>
 #include <string>
@@ -51,7 +52,10 @@ class Engine {
   void process_events();
   bool handle_player_movement(const float elapsed_time);
   bool handle_player_rotation(const float elapsed_time);
-  void cast_ray(const int index, const sf::Vector2f origin, const float angle);
+
+  void cast_ray(const int index, const sf::Vector2f origin, const float angle,
+                float line_height = -1);
+
   void cast_player_rays();
   void cast_rays();
   void update(const float elapsed_time);

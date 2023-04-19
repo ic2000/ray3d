@@ -25,6 +25,7 @@ Angle &Angle::operator-=(const float radians) {
   return *this;
 }
 
+bool Angle::operator==(const Angle &other) { return radians == other.radians; }
 float Angle::get_radians() const { return radians; }
 float Angle::get_degrees() const { return Util::to_degrees(radians); }
 
