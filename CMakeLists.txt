@@ -33,7 +33,6 @@ if(NOT CMAKE_BUILD_TYPE)
 endif()
 
 include_directories(libs/rapidjson/include)
-# add_subdirectory(libs/libzip)
 
 find_package(
   SFML 2.5
@@ -56,7 +55,6 @@ set(SRC
     src/main.cpp)
 
 add_executable(${PROJECT_NAME} ${SRC})
-target_link_libraries(${PROJECT_NAME} zip)
 target_include_directories(${PROJECT_NAME} PRIVATE "${PROJECT_BINARY_DIR}")
 target_compile_features(${PROJECT_NAME} PUBLIC cxx_std_20)
 target_link_libraries(${PROJECT_NAME} sfml-graphics)
